@@ -143,7 +143,7 @@ module SemanticLogger
         @server             = "localhost" if @protocol == :syslog
         @tcp_client_options = tcp_client
 
-        raise "Unknown protocol #{@protocol}!" unless %i[syslog tcp udp].include?(@protocol)
+        raise "Unknown protocol #{@protocol}!" unless %i[syslog tcp udp udp6].include?(@protocol)
 
         # The syslog_protocol gem is required when logging over TCP or UDP.
         if %i[tcp udp udp6].include?(@protocol)
