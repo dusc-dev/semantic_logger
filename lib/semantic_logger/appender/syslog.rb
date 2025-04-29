@@ -131,7 +131,6 @@ module SemanticLogger
                      tcp_client: {},
                      **args,
                      &block)
-
         @options            = options
         @facility           = facility
         @max_size           = max_size
@@ -147,7 +146,7 @@ module SemanticLogger
         raise "Unknown protocol #{@protocol}!" unless %i[syslog tcp udp].include?(@protocol)
 
         # The syslog_protocol gem is required when logging over TCP or UDP.
-        if %i[tcp udp].include?(@protocol)
+        if %i[tcp udp udp6].include?(@protocol)
           begin
             require "syslog_protocol"
           rescue LoadError
@@ -184,6 +183,8 @@ module SemanticLogger
           @remote_syslog.logger = logger
         when :udp
           @remote_syslog = UDPSocket.new
+        when :udp6
+          @remote_syslog = UDPSocket.new(Socket::AF_INET6)
         else
           raise "Unsupported protocol: #{@protocol}"
         end
@@ -198,7 +199,7 @@ module SemanticLogger
           ::Syslog.log @level_map[log.level], message
         when :tcp
           @remote_syslog.retry_on_connection_failure { @remote_syslog.write("#{formatter.call(log, self)}\r\n") }
-        when :udp
+        when :udp, :udp6
           @remote_syslog.send(formatter.call(log, self), 0, @server, @port)
         else
           raise "Unsupported protocol: #{protocol}"
